@@ -4,6 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solo Boxing Trainer</title>
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- PWA meta tags -->
+    <meta name="theme-color" content="#ff3b30" />
+    <meta name="background-color" content="#0a0a0a" />
+
+    <!-- Apple-specific PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Boxing Trainer" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+
+    <!-- Microsoft PWA meta tags -->
+    <meta name="msapplication-TileImage" content="icon-512.png" />
+    <meta name="msapplication-TileColor" content="#ff3b30" />
+
+    <!-- Description for app stores and search engines -->
+    <meta name="description" content="Professional boxing timer and training companion with audio callouts and customizable rounds" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -915,15 +936,67 @@
         updateThemeIcon(newTheme);
       }
 
+      // PWA functionality
+      let deferredPrompt;
+
+      function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then((registration) => {
+                console.log('sw registered successfully:', registration.scope);
+              })
+              .catch((error) => {
+                console.log('sw registration failed:', error);
+              });
+        });
+      }}
+
+      function handleInstallPrompt() {
+        // listen for the install prompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+          // prevent the mini-infobar from appearing on mobile
+          e.preventDefault();
+          // stash the event so it can be triggered later
+          deferredPrompt = e;
+
+          // optionally show install button (for future enhancement)
+          console.log('PWA install prompt ready');
+        });
+
+        // handle successful installation
+        window.addEventListener('appinstalled', (e) => {
+          console.log('PWA was installed successfully');
+          deferredPrompt = null;
+        });
+      }
+
+      // function to trigger install prompt (can be called from a button)
+      function installPWA() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('user accepted the install prompt');
+            } else {
+              console.log('user dismissed the install prompt');
+            }
+            deferredPrompt = null;
+          });
+        }
+      }
+
       // Initialize app
       document.addEventListener('DOMContentLoaded', () => {
+        // initialize PWA features
+        registerServiceWorker();
+        handleInstallPrompt();
+
         // initialize theme
         initializeTheme();
 
         // add theme toggle event listener
-        document
-          .getElementById('theme-toggle')
-          .addEventListener('click', toggleTheme);
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
         // load saved settings
         const savedSettings = localStorage.getItem('boxingTrainerSettings');
