@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solo Boxing Trainer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* modern minimalist design system */
+      :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --accent: #ff3b30;
+        --accent-hover: #e0342a;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --text-muted: #666666;
+        --border: #333333;
+        --shadow: rgba(0, 0, 0, 0.3);
+      }
+
+      /* light theme variables */
+      [data-theme='light'] {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f8f8;
+        --accent: #ff3b30;
+        --accent-hover: #e0342a;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666666;
+        --text-muted: #999999;
+        --border: #e0e0e0;
+        --shadow: rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        line-height: 1.5;
+      }
+
+      .container {
+        text-align: center;
+        max-width: 800px;
+        width: 100%;
+        position: relative;
+      }
+
+      /* theme toggle button */
+      .theme-toggle {
+        position: absolute;
+        top: -1rem;
+        right: 0;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1.25rem;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+      }
+
+      .theme-toggle:hover {
+        background: var(--border);
+        color: var(--text-primary);
+      }
+
+      .theme-toggle:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 500;
+        margin-bottom: 4rem;
+        color: var(--text-secondary);
+        letter-spacing: 0.02em;
+      }
+
+      /* massive beautiful timer display */
+      .timer-display {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(8rem, 20vw, 18rem);
+        font-weight: 600;
+        line-height: 0.9;
+        letter-spacing: 0.05em;
+        margin: 2rem 0 3rem 0;
+        filter: drop-shadow(0 0 20px rgba(255, 59, 48, 0.1));
+        min-height: 1em;
+        transition: all 0.3s ease;
+      }
+
+      .round-info {
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin: 2rem 0;
+        color: var(--text-secondary);
+        letter-spacing: 0.01em;
+      }
+
+      .status {
+        font-size: 1rem;
+        margin: 1.5rem 0 3rem 0;
+        color: var(--text-muted);
+        min-height: 1.2rem;
+      }
+
+      .controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 3rem 0;
+      }
+
+      .btn {
+        background: var(--accent);
+        border: none;
+        color: var(--text-primary);
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        letter-spacing: 0.01em;
+      }
+
+      .btn:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+        filter: drop-shadow(0 4px 12px rgba(255, 59, 48, 0.3));
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover {
+        background: var(--border);
+        color: var(--text-primary);
+        filter: none;
+      }
+
+      .settings {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem 0;
+        text-align: left;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .settings h3 {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .setting-group {
+        margin: 1.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .setting-group label {
+        color: var(--text-secondary);
+        font-weight: 500;
+        min-width: 120px;
+      }
+
+      .setting-group input,
+      .setting-group select {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: inherit;
+        min-width: 120px;
+        transition: border-color 0.2s ease;
+      }
+
+      .setting-group input:focus,
+      .setting-group select:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .volume-controls {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .workout-summary {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem 0;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .workout-summary h3 {
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .callout-display {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--accent);
+        margin: 2rem 0;
+        min-height: 1.2em;
+        letter-spacing: 0.02em;
+      }
+
+      /* responsive design */
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+          margin-bottom: 3rem;
+        }
+
+        .theme-toggle {
+          top: -0.5rem;
+          width: 2.5rem;
+          height: 2.5rem;
+          font-size: 1rem;
+        }
+
+        .timer-display {
+          font-size: clamp(6rem, 25vw, 10rem);
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn {
+          width: 200px;
+        }
+
+        .setting-group {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .setting-group input,
+        .setting-group select {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .timer-display {
+          font-size: clamp(4rem, 30vw, 8rem);
+        }
+      }
+
+      /* high contrast support */
+      @media (prefers-contrast: high) {
+        :root {
+          --border: #666666;
+        }
+
+        .btn {
+          border: 2px solid currentColor;
+        }
+      }
+
+      /* reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <button
+        class="theme-toggle"
+        id="theme-toggle"
+        aria-label="Toggle between dark and light theme"
+        title="Toggle theme"
+      >
+        <span id="theme-icon">☀️</span>
+      </button>
+      <h1>Solo Boxing Trainer</h1>
+
+      <div id="main-screen">
+        <div class="timer-display" id="timer" aria-live="polite">00:00</div>
+        <div class="round-info" id="round-info">Press SPACEBAR to start</div>
+        <div class="callout-display" id="callout"></div>
+        <div class="status" id="status">Ready to train</div>
+
+        <section class="controls">
+          <button
+            class="btn"
+            id="start-btn"
+            onclick="toggleWorkout()"
+            aria-label="Start or stop workout"
+          >
+            Start Workout
+          </button>
+          <button
+            class="btn btn-secondary"
+            id="settings-btn"
+            onclick="showSettings()"
+            aria-label="Open settings"
+          >
+            Settings
+          </button>
+        </section>
+      </div>
+
+      <aside id="settings-screen" class="hidden">
+        <div class="settings">
+          <h3>Workout Settings</h3>
+
+          <div class="setting-group">
+            <label>Rounds:</label>
+            <select id="rounds">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="8">8</option>
+              <option value="10">10</option>
+              <option value="12">12</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label>Round Length:</label>
+            <select id="round-length">
+              <option value="60">1 minute</option>
+              <option value="120">2 minutes</option>
+              <option value="180" selected>3 minutes</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label>Rest Length:</label>
+            <select id="rest-length">
+              <option value="30">30 seconds</option>
+              <option value="60" selected>1 minute</option>
+              <option value="90">90 seconds</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label>Callout Frequency:</label>
+            <select id="callout-frequency">
+              <option value="low">Low (4-8s)</option>
+              <option value="medium" selected>Medium (2-5s)</option>
+              <option value="high">High (1-3s)</option>
+            </select>
+          </div>
+
+          <h3>Volume Controls</h3>
+          <div class="volume-controls">
+            <label>Coach Volume:</label>
+            <input
+              type="range"
+              id="coach-volume"
+              min="0"
+              max="100"
+              value="80"
+            />
+
+            <label>Bell Volume:</label>
+            <input type="range" id="bell-volume" min="0" max="100" value="90" />
+
+            <label>Rest Volume:</label>
+            <input type="range" id="rest-volume" min="0" max="100" value="70" />
+          </div>
+        </div>
+
+        <section class="controls">
+          <button
+            class="btn"
+            onclick="hideSettings()"
+            aria-label="Return to workout"
+          >
+            Back to Workout
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="resetSettings()"
+            aria-label="Reset all settings to default"
+          >
+            Reset Defaults
+          </button>
+        </section>
+      </aside>
+
+      <div id="summary-screen" class="hidden">
+        <div class="workout-summary">
+          <h3>Workout Complete!</h3>
+          <div id="summary-content"></div>
+        </div>
+        <section class="controls">
+          <button
+            class="btn"
+            onclick="startNewWorkout()"
+            aria-label="Start a new workout session"
+          >
+            New Workout
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="showSettings()"
+            aria-label="Open workout settings"
+          >
+            Settings
+          </button>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      // Audio context and sounds
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      const sounds = {};
+
+      // Workout state
+      let workoutState = {
+        isActive: false,
+        isPaused: false,
+        isResting: false,
+        currentRound: 0,
+        timeRemaining: 0,
+        totalRounds: 3,
+        roundLength: 180,
+        restLength: 60,
+        startTime: null,
+        calloutTimer: null,
+        mainTimer: null,
+      };
+
+      // Settings
+      let settings = {
+        rounds: 3,
+        roundLength: 180,
+        restLength: 60,
+        calloutFrequency: 'medium',
+        coachVolume: 0.8,
+        bellVolume: 0.9,
+        restVolume: 0.7,
+      };
+
+      // Audio callouts
+      const callouts = {
+        punches: ['One', 'Two', 'Three', 'Four', 'Five', 'Six'],
+        defense: ['Slip', 'Roll', 'Duck'],
+        combinations: [
+          ['One', 'Two'],
+          ['One', 'Slip', 'Two'],
+          ['Three', 'Six'],
+          ['One', 'Two', 'Three'],
+          ['Slip', 'One', 'Two'],
+          ['Roll', 'Three', 'Four'],
+          ['Duck', 'One'],
+          ['One', 'Two', 'Slip'],
+          ['Four', 'Five', 'Six'],
+          ['Two', 'Duck', 'Three'],
+        ],
+      };
+
+      // Initialize audio (using Web Audio API for better performance)
+      function createBeep(frequency, duration, volume = 0.5) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(
+          volume,
+          audioContext.currentTime + 0.01
+        );
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + duration
+        );
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+      }
+
+      // Audio functions
+      function playBell() {
+        const volume = settings.bellVolume;
+        // Bell sound simulation
+        createBeep(800, 0.1, volume);
+        setTimeout(() => createBeep(600, 0.1, volume), 100);
+        setTimeout(() => createBeep(800, 0.1, volume), 200);
+      }
+
+      function playRestBell() {
+        const volume = settings.restVolume;
+        // Different bell for rest
+        createBeep(400, 0.2, volume);
+        setTimeout(() => createBeep(300, 0.2, volume), 250);
+      }
+
+      function playClapper() {
+        const volume = settings.bellVolume;
+        // 10 second warning
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => createBeep(1000, 0.05, volume), i * 100);
+        }
+      }
+
+      function speakCallout(text) {
+        if ('speechSynthesis' in window) {
+          const arr = text.split('-');
+          arr.forEach((part, index) => {
+            setTimeout(() => {
+              const utterance = new SpeechSynthesisUtterance(part);
+              utterance.volume = settings.coachVolume;
+              utterance.rate = 1.2;
+              utterance.pitch = 1.1;
+              speechSynthesis.speak(utterance);
+            }, index * 500);
+          });
+        } else {
+          // Fallback if speech synthesis not supported (very rare)
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.volume = settings.coachVolume;
+          utterance.rate = 1.2;
+          utterance.pitch = 1.1;
+          speechSynthesis.speak(utterance);
+        }
+
+        // Display callout visually
+        document.getElementById('callout').textContent = text;
+        setTimeout(() => {
+          document.getElementById('callout').textContent = '';
+        }, 1500);
+      }
+
+      // el timer
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs
+          .toString()
+          .padStart(2, '0')}`;
+      }
+
+      function updateDisplay() {
+        const timerEl = document.getElementById('timer');
+        const roundInfoEl = document.getElementById('round-info');
+        const statusEl = document.getElementById('status');
+
+        timerEl.textContent = formatTime(workoutState.timeRemaining);
+
+        if (workoutState.isActive) {
+          if (workoutState.isResting) {
+            roundInfoEl.textContent = `Rest - Round ${workoutState.currentRound}/${workoutState.totalRounds}`;
+            statusEl.textContent = 'Rest period';
+          } else {
+            roundInfoEl.textContent = `Round ${workoutState.currentRound}/${workoutState.totalRounds}`;
+            statusEl.textContent = 'Training active';
+          }
+        } else {
+          roundInfoEl.textContent = 'Press SPACEBAR to start';
+          statusEl.textContent = 'Ready to train';
+        }
+      }
+
+      function getCalloutInterval() {
+        const frequencies = {
+          low: { min: 4000, max: 8000 },
+          medium: { min: 2000, max: 5000 },
+          high: { min: 1000, max: 3000 },
+        };
+
+        const freq = frequencies[settings.calloutFrequency];
+        return Math.random() * (freq.max - freq.min) + freq.min;
+      }
+
+      function generateCallout() {
+        const rand = Math.random();
+
+        if (rand < 0.6) {
+          // punch or defense move
+          if (Math.random() < 0.7) {
+            return callouts.punches[
+              Math.floor(Math.random() * callouts.punches.length)
+            ];
+          } else {
+            return callouts.defense[
+              Math.floor(Math.random() * callouts.defense.length)
+            ];
+          }
+        } else {
+          // combo
+          const combo =
+            callouts.combinations[
+              Math.floor(Math.random() * callouts.combinations.length)
+            ];
+          return combo.join('-');
+        }
+      }
+
+      function scheduleNextCallout() {
+        if (workoutState.isActive && !workoutState.isResting) {
+          const interval = getCalloutInterval();
+          workoutState.calloutTimer = setTimeout(() => {
+            const callout = generateCallout();
+            speakCallout(callout);
+            scheduleNextCallout();
+          }, interval);
+        }
+      }
+
+      function startRound() {
+        workoutState.isResting = false;
+        workoutState.timeRemaining = settings.roundLength;
+        playBell();
+        scheduleNextCallout();
+
+        // Schedule 10-second warning
+        setTimeout(() => {
+          if (workoutState.isActive && !workoutState.isResting) {
+            playClapper();
+          }
+        }, (settings.roundLength - 10) * 1000);
+      }
+
+      function startRest() {
+        workoutState.isResting = true;
+        workoutState.timeRemaining = settings.restLength;
+        playRestBell();
+
+        if (workoutState.calloutTimer) {
+          clearTimeout(workoutState.calloutTimer);
+        }
+      }
+
+      function endWorkout() {
+        workoutState.isActive = false;
+        workoutState.isPaused = false;
+
+        if (workoutState.calloutTimer) {
+          clearTimeout(workoutState.calloutTimer);
+        }
+        if (workoutState.mainTimer) {
+          clearInterval(workoutState.mainTimer);
+        }
+
+        showWorkoutSummary();
+      }
+
+      function mainTimerTick() {
+        if (!workoutState.isActive || workoutState.isPaused) return;
+
+        workoutState.timeRemaining--;
+        updateDisplay();
+
+        if (workoutState.timeRemaining <= 0) {
+          if (workoutState.isResting) {
+            // Rest period ended, start next round
+            workoutState.currentRound++;
+            if (workoutState.currentRound <= workoutState.totalRounds) {
+              startRound();
+            } else {
+              endWorkout();
+            }
+          } else {
+            // Round ended
+            if (workoutState.currentRound < workoutState.totalRounds) {
+              startRest();
+            } else {
+              endWorkout();
+            }
+          }
+        }
+      }
+
+      function toggleWorkout() {
+        if (!workoutState.isActive) {
+          startWorkout();
+        } else {
+          stopWorkout();
+        }
+      }
+
+      function startWorkout() {
+        // Resume audio context if needed
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+
+        workoutState.isActive = true;
+        workoutState.isPaused = false;
+        workoutState.currentRound = 1;
+        workoutState.totalRounds = settings.rounds;
+        workoutState.startTime = Date.now();
+
+        document.getElementById('start-btn').textContent = 'Stop Workout';
+
+        startRound();
+        workoutState.mainTimer = setInterval(mainTimerTick, 1000);
+      }
+
+      function stopWorkout() {
+        workoutState.isActive = false;
+        workoutState.isPaused = false;
+        workoutState.currentRound = 0;
+        workoutState.timeRemaining = 0;
+
+        if (workoutState.calloutTimer) {
+          clearTimeout(workoutState.calloutTimer);
+        }
+        if (workoutState.mainTimer) {
+          clearInterval(workoutState.mainTimer);
+        }
+
+        document.getElementById('start-btn').textContent = 'Start Workout';
+        document.getElementById('callout').textContent = '';
+        updateDisplay();
+      }
+
+      function showWorkoutSummary() {
+        const totalTime = Math.floor(
+          (Date.now() - workoutState.startTime) / 1000
+        );
+        const summaryContent = document.getElementById('summary-content');
+
+        summaryContent.innerHTML = `
+                <p><strong>Rounds Completed:</strong> ${
+                  workoutState.currentRound - 1
+                }/${workoutState.totalRounds}</p>
+                <p><strong>Total Time:</strong> ${formatTime(totalTime)}</p>
+                <p><strong>Round Length:</strong> ${formatTime(
+                  settings.roundLength
+                )}</p>
+                <p><strong>Rest Length:</strong> ${formatTime(
+                  settings.restLength
+                )}</p>
+            `;
+
+        document.getElementById('main-screen').classList.add('hidden');
+        document.getElementById('summary-screen').classList.remove('hidden');
+      }
+
+      function startNewWorkout() {
+        stopWorkout();
+        document.getElementById('summary-screen').classList.add('hidden');
+        document.getElementById('main-screen').classList.remove('hidden');
+      }
+
+      function showSettings() {
+        loadSettings();
+        document.getElementById('main-screen').classList.add('hidden');
+        document.getElementById('summary-screen').classList.add('hidden');
+        document.getElementById('settings-screen').classList.remove('hidden');
+      }
+
+      function hideSettings() {
+        saveSettings();
+        document.getElementById('settings-screen').classList.add('hidden');
+        document.getElementById('main-screen').classList.remove('hidden');
+      }
+
+      function loadSettings() {
+        document.getElementById('rounds').value = settings.rounds;
+        document.getElementById('round-length').value = settings.roundLength;
+        document.getElementById('rest-length').value = settings.restLength;
+        document.getElementById('callout-frequency').value =
+          settings.calloutFrequency;
+        document.getElementById('coach-volume').value =
+          settings.coachVolume * 100;
+        document.getElementById('bell-volume').value =
+          settings.bellVolume * 100;
+        document.getElementById('rest-volume').value =
+          settings.restVolume * 100;
+      }
+
+      function saveSettings() {
+        settings.rounds = parseInt(document.getElementById('rounds').value);
+        settings.roundLength = parseInt(
+          document.getElementById('round-length').value
+        );
+        settings.restLength = parseInt(
+          document.getElementById('rest-length').value
+        );
+        settings.calloutFrequency =
+          document.getElementById('callout-frequency').value;
+        settings.coachVolume =
+          document.getElementById('coach-volume').value / 100;
+        settings.bellVolume =
+          document.getElementById('bell-volume').value / 100;
+        settings.restVolume =
+          document.getElementById('rest-volume').value / 100;
+
+        // Save to localStorage
+        localStorage.setItem('boxingTrainerSettings', JSON.stringify(settings));
+      }
+
+      function resetSettings() {
+        settings = {
+          rounds: 3,
+          roundLength: 180,
+          restLength: 60,
+          calloutFrequency: 'medium',
+          coachVolume: 0.8,
+          bellVolume: 0.9,
+          restVolume: 0.7,
+        };
+        loadSettings();
+        localStorage.removeItem('boxingTrainerSettings');
+      }
+
+      // Keyboard controls
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          toggleWorkout();
+        }
+      });
+
+      // theme toggle functionality
+      function initializeTheme() {
+        const savedTheme = localStorage.getItem('boxingTrainerTheme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+      }
+
+      function updateThemeIcon(theme) {
+        const themeIcon = document.getElementById('theme-icon');
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+
+      function toggleTheme() {
+        const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('boxingTrainerTheme', newTheme);
+        updateThemeIcon(newTheme);
+      }
+
+      // Initialize app
+      document.addEventListener('DOMContentLoaded', () => {
+        // initialize theme
+        initializeTheme();
+
+        // add theme toggle event listener
+        document
+          .getElementById('theme-toggle')
+          .addEventListener('click', toggleTheme);
+
+        // load saved settings
+        const savedSettings = localStorage.getItem('boxingTrainerSettings');
+        if (savedSettings) {
+          settings = { ...settings, ...JSON.parse(savedSettings) };
+        }
+
+        updateDisplay();
+
+        // ensure audio context is ready
+        document.addEventListener(
+          'click',
+          () => {
+            if (audioContext.state === 'suspended') {
+              audioContext.resume();
+            }
+          },
+          { once: true }
+        );
+      });
+    </script>
+  </body>
+</html>
